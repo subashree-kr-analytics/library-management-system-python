@@ -1,0 +1,301 @@
+import tkinter as tk
+from tkinter import ttk, messagebox
+import pymysql
+from datetime import datetime, timedelta
+
+class Library:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Library Management System")
+        self.root.geometry("1100x650")
+        self.root.configure(bg="#0f172a")
+        self.welcome()
+
+    # ---------------- DATABASE ----------------
+    def db(self):
+        return pymysql.connect(
+            host="localhost",
+            user="root",
+            passwd="subashree_3",
+            database="library"
+        )
+
+    # ---------------- WELCOME PAGE ----------------
+    def welcome(self):
+        for w in self.root.winfo_children():
+            w.destroy()
+
+        tk.Label(self.root,text="Library Management System",
+                 font=("Segoe UI",28,"bold"),
+                 bg="#0f172a",fg="white").pack(pady=40)
+
+        tk.Button(self.root,text="ENTER SYSTEM",
+                  font=("Segoe UI",16,"bold"),
+                  bg="#38bdf8",width=20,
+                  command=self.main_screen).pack(pady=20)
+
+    # ---------------- MAIN SCREEN ----------------
+    def main_screen(self):
+        for w in self.root.winfo_children():
+            w.destroy()
+
+        tk.Label(self.root,text="Library Dashboard",
+                 font=("Segoe UI",20,"bold"),
+                 bg="#0f172a",fg="white").pack(pady=10)
+
+        btn_frame = tk.Frame(self.root,bg="#0f172a")
+        btn_frame.pack(side="left",fill="y",padx=10)
+
+        buttons = [
+            ("Register Student", self.register_student),
+            ("View Students", self.view_students),
+            ("Add Book", self.add_book),
+            ("Search Book", self.search_book),
+            ("Delete Book", self.delete_book),
+            ("Issue Book", self.issue),   # FIXED
+            ("Return Book", self.return_book),
+            ("Transactions", self.transactions),
+            ("Refresh", self.show_books),
+            ("Back", self.welcome),
+            ("Exit", self.root.destroy)
+        ]
+
+        for txt,cmd in buttons:
+            tk.Button(btn_frame,text=txt,width=22,
+                      command=cmd,bg="#38bdf8",
+                      font=("Segoe UI",10,"bold")).pack(pady=4)
+
+        table_frame = tk.Frame(self.root)
+        table_frame.pack(side="right",fill="both",expand=True)
+
+        self.table = ttk.Treeview(table_frame,
+            columns=("ID","Name","Qty"),show="headings")
+        self.table.heading("ID",text="Book ID")
+        self.table.heading("Name",text="Book Name")
+        self.table.heading("Qty",text="Quantity")
+        self.table.pack(fill="both",expand=True)
+
+        self.show_books()
+
+    # ---------------- SHOW BOOKS ----------------
+    def show_books(self):
+        self.table.delete(*self.table.get_children())
+        con=self.db()
+        cur=con.cursor()
+        cur.execute("SELECT * FROM lib")
+        for row in cur.fetchall():
+            self.table.insert("",tk.END,values=row)
+        con.close()
+
+    # ---------------- REGISTER STUDENT ----------------
+    def register_student(self):
+        win=tk.Toplevel(self.root)
+        win.title("Register Student")
+        win.geometry("300x300")
+
+        tk.Label(win,text="Roll No").pack()
+        roll=tk.Entry(win); roll.pack()
+
+        tk.Label(win,text="Name").pack()
+        name=tk.Entry(win); name.pack()
+
+        tk.Label(win,text="Subject").pack()
+        sub=tk.Entry(win); sub.pack()
+
+        def save():
+            con=self.db()
+            cur=con.cursor()
+            cur.execute(
+              "INSERT INTO reg (rollNo,sName,subject,total_book) VALUES (%s,%s,%s,%s)",
+              (roll.get(),name.get(),sub.get(),0))
+            con.commit(); con.close()
+            messagebox.showinfo("Success","Student Registered")
+            win.destroy()
+
+        tk.Button(win,text="Save",command=save).pack(pady=10)
+
+    # ---------------- VIEW STUDENTS ----------------
+    def view_students(self):
+        win=tk.Toplevel(self.root)
+        win.title("Registered Students")
+        win.geometry("700x400")
+
+        table=ttk.Treeview(win,
+            columns=("Roll","Name","Subject","Total"),show="headings")
+        for col in ("Roll","Name","Subject","Total"):
+            table.heading(col,text=col)
+        table.pack(fill="both",expand=True)
+
+        con=self.db(); cur=con.cursor()
+        cur.execute("SELECT * FROM reg")
+        for row in cur.fetchall():
+            table.insert("",tk.END,values=row)
+        con.close()
+
+    # ---------------- ADD BOOK ----------------
+    def add_book(self):
+        win=tk.Toplevel(self.root)
+        win.title("Add Book")
+        win.geometry("300x250")
+
+        tk.Label(win,text="Book ID").pack()
+        bid=tk.Entry(win); bid.pack()
+
+        tk.Label(win,text="Book Name").pack()
+        name=tk.Entry(win); name.pack()
+
+        tk.Label(win,text="Quantity").pack()
+        qty=tk.Entry(win); qty.pack()
+
+        def save():
+            con=self.db(); cur=con.cursor()
+            cur.execute("INSERT INTO lib VALUES(%s,%s,%s)",
+                        (bid.get(),name.get(),qty.get()))
+            con.commit(); con.close()
+            messagebox.showinfo("Success","Book Added")
+            win.destroy(); self.show_books()
+
+        tk.Button(win,text="Save",command=save).pack(pady=10)
+
+    # ---------------- SEARCH BOOK ----------------
+    def search_book(self):
+        win=tk.Toplevel(self.root)
+        win.title("Search Book")
+        win.geometry("300x150")
+
+        tk.Label(win,text="Book Name").pack()
+        name=tk.Entry(win); name.pack()
+
+        def search():
+            self.table.delete(*self.table.get_children())
+            con=self.db(); cur=con.cursor()
+            cur.execute("SELECT * FROM lib WHERE Name LIKE %s",
+                        ('%'+name.get()+'%',))
+            rows=cur.fetchall(); con.close()
+            if not rows:
+                messagebox.showerror("Error","No Book Found"); return
+            for r in rows:
+                self.table.insert("",tk.END,values=r)
+            win.destroy()
+
+        tk.Button(win,text="Search",command=search).pack(pady=10)
+
+    # ---------------- DELETE BOOK ----------------
+    def delete_book(self):
+        sel=self.table.focus()
+        if not sel:
+            messagebox.showerror("Error","Select Book"); return
+        bid=self.table.item(sel)['values'][0]
+        con=self.db(); cur=con.cursor()
+        cur.execute("DELETE FROM lib WHERE ID=%s",(bid,))
+        con.commit(); con.close()
+        messagebox.showinfo("Deleted","Book Deleted")
+        self.show_books()
+
+    # ---------------- ISSUE BOOK ----------------
+    def issue(self):
+        win=tk.Toplevel(self.root)
+        win.title("Issue Book")
+        win.geometry("300x250")
+
+        tk.Label(win,text="Roll No").pack()
+        roll=tk.Entry(win); roll.pack()
+
+        tk.Label(win,text="Book ID").pack()
+        bid=tk.Entry(win); bid.pack()
+
+        def issue_book():
+            con=self.db(); cur=con.cursor()
+
+            cur.execute("SELECT rollNo FROM reg WHERE rollNo=%s",(roll.get(),))
+            if not cur.fetchone():
+                messagebox.showerror("Error","Student Not Found")
+                con.close(); return
+
+            cur.execute("SELECT Quantity FROM lib WHERE ID=%s",(bid.get(),))
+            book=cur.fetchone()
+            if not book:
+                messagebox.showerror("Error","Book ID Invalid")
+                con.close(); return
+
+            if int(book[0])<=0:
+                messagebox.showerror("Error","Book Not Available")
+                con.close(); return
+
+            issue_date=datetime.now().date()
+            due_date=issue_date+timedelta(days=7)
+
+            cur.execute("UPDATE lib SET Quantity=Quantity-1 WHERE ID=%s",(bid.get(),))
+            cur.execute("UPDATE reg SET total_book=total_book+1 WHERE rollNo=%s",(roll.get(),))
+
+            cur.execute("""
+                INSERT INTO transactions
+                (rollNo,bookId,issue_date,due_date,return_date,penalty)
+                VALUES (%s,%s,%s,%s,%s,%s)
+            """,(roll.get(),bid.get(),issue_date,due_date,None,0))
+
+            con.commit(); con.close()
+            messagebox.showinfo("Success","Book Issued Successfully")
+            win.destroy(); self.show_books()
+
+        tk.Button(win,text="Issue",command=issue_book).pack(pady=10)
+
+    # ---------------- RETURN BOOK ----------------
+    def return_book(self):
+        win=tk.Toplevel(self.root)
+        win.title("Return Book")
+        win.geometry("300x200")
+
+        tk.Label(win,text="Roll No").pack()
+        roll=tk.Entry(win); roll.pack()
+
+        tk.Label(win,text="Book ID").pack()
+        bid=tk.Entry(win); bid.pack()
+
+        def ret():
+            con=self.db(); cur=con.cursor()
+            cur.execute(
+              "SELECT due_date FROM transactions WHERE rollNo=%s AND bookId=%s AND return_date IS NULL",
+              (roll.get(),bid.get()))
+            row=cur.fetchone()
+            if not row:
+                messagebox.showerror("Error","No Record")
+                con.close(); return
+
+            today=datetime.now().date()
+            penalty=max(0,(today-row[0]).days*5)
+
+            cur.execute(
+              "UPDATE transactions SET return_date=%s,penalty=%s WHERE rollNo=%s AND bookId=%s AND return_date IS NULL",
+              (today,penalty,roll.get(),bid.get()))
+            cur.execute("UPDATE lib SET Quantity=Quantity+1 WHERE ID=%s",(bid.get(),))
+            cur.execute("UPDATE reg SET total_book=total_book-1 WHERE rollNo=%s",(roll.get(),))
+            con.commit(); con.close()
+            messagebox.showinfo("Returned",f"Penalty: ₹{penalty}")
+            win.destroy(); self.show_books()
+
+        tk.Button(win,text="Return",command=ret).pack(pady=10)
+
+    # ---------------- TRANSACTIONS ----------------
+    def transactions(self):
+        win=tk.Toplevel(self.root)
+        win.title("Transactions")
+        win.geometry("750x400")
+
+        table=ttk.Treeview(win,
+          columns=("Roll","Book","Issue","Due","Return","Penalty"),
+          show="headings")
+        for col in table['columns']:
+            table.heading(col,text=col)
+        table.pack(fill="both",expand=True)
+
+        con=self.db(); cur=con.cursor()
+        cur.execute("SELECT * FROM transactions")
+        for row in cur.fetchall():
+            table.insert("",tk.END,values=row)
+        con.close()
+
+# ---------------- RUN ----------------
+root=tk.Tk()
+Library(root)
+root.mainloop()
