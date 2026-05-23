@@ -36,6 +36,10 @@ Library-Management-System/
 │── images/
 │     └── screenshot.png
 
+## 📸 Project Preview
+
+![Database Screenshot](images/screenshot.png)
+
 ---
 
 ## ⭐ Note
