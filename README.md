@@ -20,6 +20,12 @@ It helps to manage library operations like adding books, viewing available books
 
 ---
 
+## 📸 Project Preview
+
+![Database Screenshot](images/screenshot.png)
+
+---
+
 ## 🚀 How to Run
 1. Open terminal or command prompt
 2. Navigate to project folder
@@ -35,10 +41,6 @@ Library-Management-System/
 │── README.md
 │── images/
 │     └── screenshot.png
-
-## 📸 Project Preview
-
-![Database Screenshot](images/screenshot.png)
 
 ---
 
