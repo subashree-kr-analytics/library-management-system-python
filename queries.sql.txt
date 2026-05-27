@@ -1,0 +1,70 @@
+-- =========================
+-- LIBRARY MANAGEMENT SYSTEM DATABASE
+-- =========================
+
+CREATE DATABASE IF NOT EXISTS library;
+USE library;
+
+-- =========================
+-- TABLE: REG (STUDENTS)
+-- =========================
+CREATE TABLE IF NOT EXISTS reg (
+    rollNo VARCHAR(20) PRIMARY KEY,
+    sName VARCHAR(100),
+    subject VARCHAR(100),
+    total_book INT DEFAULT 0
+);
+
+-- =========================
+-- TABLE: LIB (BOOKS)
+-- =========================
+CREATE TABLE IF NOT EXISTS lib (
+    bookId INT PRIMARY KEY,
+    bookName VARCHAR(100),
+    quantity INT
+);
+
+-- =========================
+-- TABLE: TRANSACTIONS
+-- =========================
+CREATE TABLE IF NOT EXISTS transactions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    rollNo VARCHAR(20),
+    bookId INT,
+    issue_date DATE,
+    due_date DATE,
+    return_date DATE,
+    penalty INT DEFAULT 0,
+
+    FOREIGN KEY (rollNo) REFERENCES reg(rollNo),
+    FOREIGN KEY (bookId) REFERENCES lib(bookId)
+);
+
+-- =========================
+-- SAMPLE DATA: BOOKS
+-- =========================
+INSERT INTO lib (bookId, bookName, quantity) VALUES
+(1, 'Python Basics', 5),
+(2, 'DBMS', 3),
+(3, 'Data Structures', 4),
+(4, 'Ikigai', 3),
+(5, 'Seven Steps for Manifestation', 2),
+(6, 'Art of Living Alone', 7),
+(7, 'The Alchemist', 3),
+(8, 'The Psychology of Money', 5),
+(9, 'Twisted Love', 4),
+(10, 'Twisted Games', 5);
+
+-- =========================
+-- SAMPLE DATA: STUDENTS
+-- =========================
+INSERT INTO reg (rollNo, sName, subject, total_book) VALUES
+('R001', 'Subashree', 'CS', 2),
+('R002', 'Arun', 'IT', 1);
+
+-- =========================
+-- VIEW DATA
+-- =========================
+SELECT * FROM lib;
+SELECT * FROM reg;
+SELECT * FROM transactions;
