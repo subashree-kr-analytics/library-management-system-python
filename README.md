@@ -1,48 +1,43 @@
-# 📚 Library Management System (Python)
+# 📚 Library Management System (Python + SQL)
 
 ## 📌 Project Description
-This is a simple Library Management System developed using Python.  
-It helps to manage library operations like adding books, viewing available books, issuing books, returning books, and maintaining basic records.
+This project is a Library Management System developed using Python and MySQL.  
+It helps manage library operations such as book records, student details, book issue and return management, and database handling.
+
+The project demonstrates Python programming concepts along with SQL database connectivity.
 
 ---
 
 ## ⚙️ Features
-- ➕ Add new books
-- 👀 View available books
-- 📤 Issue books to users
-- 📥 Return books
-- 📦 Basic library management system
+- 📚 Book management system
+- 👨‍🎓 Student record management
+- 📤 Book issue tracking
+- 📥 Book return management
+- 🗄️ MySQL database integration
+- 🔍 Data retrieval and updates
+- 📊 Basic library operations handling
 
 ---
 
 ## 🧑‍💻 Technologies Used
 - Python
+- MySQL
+- SQL Queries
 
 ---
 
 ## 📸 Project Preview
 
-![Database Screenshot](images/screenshot.png)
+![Library Management System](images/screenshot.png)
 
 ---
 
 ## 🚀 How to Run
-1. Open terminal or command prompt
-2. Navigate to project folder
-3. Run the program:
 
+1. Install Python and MySQL
+2. Import the database using `queries.sql`
+3. Open the project folder
+4. Run the Python program:
+
+```bash
 python main.py
-
----
-
-## 📁 Project Structure
-Library-Management-System/
-│── main.py
-│── README.md
-│── images/
-│     └── screenshot.png
-
----
-
-## ⭐ Note
-This is a beginner-level Python project created for learning CRUD operations and basic programming concepts.
